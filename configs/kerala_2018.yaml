@@ -1,0 +1,52 @@
+# Kerala Floods, August 2018 — primary case-study configuration.
+# All other regions/events can be added by cloning this file.
+
+name: kerala_2018
+region: "Kerala, India"
+description: >
+  August 2018 Kerala floods (Alappuzha, Ernakulam, Thrissur districts).
+  Pre-event composite: 06–20 July 2018 (dry baseline).
+  Post-event composite: 19–25 August 2018 (peak flood window).
+
+# WGS84 bounding box [west, south, east, north] in degrees.
+bbox: [76.0, 9.5, 77.0, 10.5]
+
+# Projected CRS to export GeoTIFFs in (UTM zone 43N for Kerala).
+crs: "EPSG:32643"
+
+# Native pixel size in the target CRS (metres). 10 m = Sentinel-2 native for B2/3/4/8.
+pixel_size_m: 10
+
+# Sentinel-2 band subset (L2A surface reflectance).
+# B2/B3/B4 = RGB, B8 = NIR (10 m). B11/B12 = SWIR (20 m, resampled to 10 m on export).
+bands: ["B2", "B3", "B4", "B8", "B11", "B12"]
+
+# Cloud filter on Sentinel-2 collection metadata BEFORE SCL masking.
+max_cloud_cover_pct: 40
+
+pre_event:
+  start: "2018-07-06"
+  end:   "2018-07-20"
+
+post_event:
+  start: "2018-08-19"
+  end:   "2018-08-25"
+
+# Reducer used to build the composite over each window.
+# Median is robust to residual clouds/shadows that SCL masking missed.
+composite_reducer: "median"
+
+# GEE collection IDs (Sentinel-2 L2A + S1 GRD for the SAR stretch in Phase 7).
+collections:
+  s2_l2a: "COPERNICUS/S2_SR_HARMONIZED"
+  s1_grd: "COPERNICUS/S1_GRD"
+  worldcover: "ESA/WorldCover/v200"
+  jrc_water: "JRC/GSW1_4/GlobalSurfaceWater"
+
+# Ground-truth reference (UNOSAT rapid mapping product for Kerala 2018).
+# The exact URL can rot; we keep a manual mirror in data/gt/ as a fallback.
+ground_truth:
+  source: "UNOSAT Kerala Flood Waters 20180822"
+  url: "https://unosat.org/products/2728"
+  local_shapefile: "data/gt/unosat_kerala_2018.shp"
+  rasterized_mask: "data/gt/kerala_gt.tif"
