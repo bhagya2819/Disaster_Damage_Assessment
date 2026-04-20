@@ -1,0 +1,59 @@
+# Colab / pip-only install path. Mirror of environment.yml for non-conda users.
+# Usage (in Colab):  !pip install -r requirements.txt
+
+# --- Geospatial ---
+rasterio==1.3.9
+geopandas==0.14.3
+shapely==2.0.3
+pyproj==3.6.1
+fiona==1.9.5
+rioxarray==0.15.1
+xarray==2024.1.1
+
+# --- Scientific ---
+numpy==1.26.4
+scipy==1.11.4
+pandas==2.1.4
+scikit-learn==1.4.0
+scikit-image==0.22.0
+opencv-python==4.9.0.80
+
+# --- Deep learning (Colab already has torch; keep version pins loose) ---
+torch>=2.2,<2.4
+torchvision>=0.17,<0.19
+segmentation-models-pytorch==0.3.3
+albumentations==1.3.1
+
+# --- Visualization ---
+matplotlib==3.8.2
+seaborn==0.13.2
+plotly==5.18.0
+folium==0.15.1
+
+# --- Web app ---
+streamlit==1.31.1
+streamlit-folium==0.17.6
+
+# --- Data access ---
+earthengine-api==0.1.390
+geemap==0.30.3
+sentinelsat==1.2.1
+osmnx==1.9.1
+s2cloudless==1.7.2
+
+# --- Reporting ---
+weasyprint==60.2
+reportlab==4.0.9
+
+# --- Tooling ---
+pytest==8.0.0
+pytest-cov==4.1.0
+ruff==0.2.1
+black==24.1.1
+mypy==1.8.0
+pre-commit==3.6.0
+wandb==0.16.2
+python-dotenv==1.0.1
+tqdm==4.66.1
+typer==0.9.0
+rich==13.7.0
