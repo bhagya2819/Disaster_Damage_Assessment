@@ -29,7 +29,8 @@ pytest
 
 ### Google Colab
 ```python
-!git clone <repo-url> dda-flood && cd dda-flood
+!git clone https://github.com/bhagya2819/Disaster_Damage_Assessment.git
+%cd Disaster_Damage_Assessment
 !pip install -r requirements.txt
 ```
 
