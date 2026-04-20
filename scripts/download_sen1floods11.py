@@ -14,14 +14,26 @@ For the course project the HandLabeled subset is sufficient to train a U-Net
 with IoU ≥ 0.75 on the test split. Fire WeaklyLabeled only if you want to
 push results in Phase 7.
 
-Usage (paste into a Colab cell):
+Usage in Google Colab — paste each block into its OWN cell, with NO leading
+indentation (Colab magics like %cd must sit at column 0):
 
-    !git clone https://github.com/<you>/Disaster_Damage_Assessment.git
-    %cd Disaster_Damage_Assessment
-    !pip install -q -r requirements.txt
-    from google.colab import drive
-    drive.mount('/content/drive')
-    !python scripts/download_sen1floods11.py --dest /content/drive/MyDrive/dda/sen1floods11 --subset hand
+Cell 1:
+!git clone https://github.com/bhagya2819/Disaster_Damage_Assessment.git
+%cd Disaster_Damage_Assessment
+
+Cell 2:
+!pip install -q rich
+
+Cell 3:
+from google.colab import drive
+drive.mount('/content/drive')
+
+Cell 4:
+from google.colab import auth
+auth.authenticate_user()
+
+Cell 5:
+!python scripts/download_sen1floods11.py --dest /content/drive/MyDrive/dda/sen1floods11 --subset hand
 
 After the first download, subsequent Colab sessions just mount the same Drive
 folder — no re-download needed.
