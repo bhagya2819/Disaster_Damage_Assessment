@@ -102,9 +102,9 @@ data/external/**
 !configs/**/*.geojson
 !tests/fixtures/**
 
-# -------- Model artefacts --------
-models/
-checkpoints/
+# -------- Model artefacts (root-only; do not swallow src/models/) --------
+/models/
+/checkpoints/
 *.pt
 *.pth
 *.ckpt
