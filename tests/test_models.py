@@ -55,11 +55,13 @@ def test_dice_loss_perfect_prediction() -> None:
 
 
 def test_dice_loss_all_wrong() -> None:
+    # With logits=-20 the sigmoid is ~2e-9 so the smoothed Dice loss should
+    # approach 1.0; using -5 only gets to ~0.88 because sigmoid(-5) ≈ 0.007.
     target = torch.zeros(1, 4, 4, dtype=torch.int64)
     target[..., :2] = 1
-    logits = torch.full((1, 4, 4), -5.0)  # always predict 0
+    logits = torch.full((1, 4, 4), -20.0)
     loss = DiceLoss()(logits, target)
-    assert loss.item() > 0.9
+    assert loss.item() > 0.99
 
 
 def test_bce_dice_respects_ignore_index() -> None:
@@ -72,8 +74,8 @@ def test_bce_dice_respects_ignore_index() -> None:
 
 def test_bce_dice_backward() -> None:
     # Smoke: gradient flows through the combined loss.
-    target = torch.tensor([[[0, 1, 0], [1, 1, 0]]], dtype=torch.int64)
-    logits = torch.zeros(1, 3, 3, requires_grad=True)
+    target = torch.tensor([[[0, 1, 0], [1, 1, 0]]], dtype=torch.int64)  # (1, 2, 3)
+    logits = torch.zeros(1, 2, 3, requires_grad=True)
     loss = BCEDiceLoss(alpha=0.5)(logits, target)
     loss.backward()
     assert logits.grad is not None
