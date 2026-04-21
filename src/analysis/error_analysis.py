@@ -15,7 +15,7 @@ Categories use two easy-to-compute indices:
 | turbid_water          | MNDWI > 0.1  AND  NDVI < 0       | sediment-rich flood water   |
 | dark_land             | MNDWI < 0    AND  NIR < 0.1      | asphalt, shadow, burnt      |
 | vegetation            | NDVI > 0.3                       | crops, forest               |
-| bare_sparse           | NDVI in [0, 0.3] AND MNDWI < 0   | bare soil / built-up        |
+| bare_sparse           | NDVI in [0, 0.3] AND MNDWI < 0 AND NIR >= 0.10 | bare soil / built-up |
 | other                 | otherwise                         | — catch-all                 |
 
 For every chip we tabulate how many false positives and false negatives fall
@@ -56,7 +56,8 @@ def categorise(stack: np.ndarray) -> np.ndarray:
     cat[(mndwi > 0.1) & (ndvi < 0.0)] = 0                    # turbid water
     cat[(mndwi < 0.0) & (nir < 0.10)] = 1                    # dark land
     cat[ndvi > 0.3] = 2                                      # vegetation
-    cat[(ndvi >= 0.0) & (ndvi <= 0.3) & (mndwi < 0.0)] = 3   # bare / sparse
+    # bare_sparse excludes dark pixels so the categories partition uniquely.
+    cat[(ndvi >= 0.0) & (ndvi <= 0.3) & (mndwi < 0.0) & (nir >= 0.10)] = 3
     return cat
 
 

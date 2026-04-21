@@ -41,11 +41,12 @@ def test_severity_severe_class() -> None:
 
 
 def test_severity_grid_partitioning() -> None:
-    # 200x200 with 2x2 grid of 100x100 cells, each cell flooded at 0, 10, 20, 50 %.
+    # 200x200 with 2x2 grid of 100x100 cells = 10 000 px each.
+    # Target fractions per cell: 0, 8% (Low), 20% (Moderate), 50% (Severe).
     mask = np.zeros((200, 200), dtype=bool)
-    mask[:100, 100:100 + 32] = True   # top-right cell ~10.2% flooded → Low
-    mask[100:, :100].flat[:2000] = True  # bottom-left cell 20% → Moderate
-    mask[100:, 100:].flat[:5000] = True  # bottom-right cell 50% → Severe
+    mask[:100, 100:108] = True          # top-right: 8*100 = 800 / 10 000 = 8% → Low
+    mask[100:, :100].flat[:2000] = True  # bottom-left: 20% → Moderate
+    mask[100:, 100:].flat[:5000] = True  # bottom-right: 50% → Severe
     _, cls = classify(mask, cfg=SeverityConfig(cell_px=100))
     assert cls.shape == (2, 2)
     assert Severity(int(cls[0, 0])) == Severity.NONE
