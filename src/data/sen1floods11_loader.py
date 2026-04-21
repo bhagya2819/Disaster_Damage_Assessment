@@ -35,9 +35,18 @@ from torch.utils.data import Dataset
 Split = Literal["train", "valid", "test", "bolivia"]
 Modality = Literal["s1", "s2"]
 
-# Default Sentinel-2 bands (as used in Bonafilia 2020): B2, B3, B4, B8, B11, B12.
-# These are the 6 bands the rest of the DDA pipeline operates on.
-S2_BAND_INDICES: tuple[int, ...] = (1, 2, 3, 7, 10, 11)  # 1-based TIFF band indices
+# Sen1Floods11 stores S2Hand chips with 13 bands in the order
+#   [B1, B2, B3, B4, B5, B6, B7, B8, B8A, B9, B11, B12, QA60]
+# (see https://github.com/cloudtostreet/Sen1Floods11).
+#
+# The DDA subset (defined in configs/kerala_2018.yaml) is
+#   [B2, B3, B4, B8, B11, B12]
+# which corresponds to 1-based rasterio band indices (2, 3, 4, 8, 11, 12).
+#
+# Prior versions of this loader used (1, 2, 3, 7, 10, 11) — an off-by-one that
+# loaded the adjacent bands (B1/B2/B3/B7/B9/B11) and silently degraded every
+# downstream spectral index.
+S2_BAND_INDICES: tuple[int, ...] = (2, 3, 4, 8, 11, 12)  # 1-based TIFF band indices
 S2_REFLECTANCE_SCALE: float = 10_000.0
 
 # S1 is stored as linear-scale sigma-naught (already calibrated). We convert to
