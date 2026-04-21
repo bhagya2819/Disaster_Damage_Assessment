@@ -16,30 +16,36 @@ Consolidate the outputs of Phases 2–4 into the deliverables the rubric's **Ana
 
 ---
 
-## 2. Final comparison table
+## 2. Final comparison table (locked 2026-04-21)
 
-Filled from `scripts/run_final_comparison.py` → `results/final_comparison/summary.json`. Re-run after any model change.
+Source: `results/final_comparison/summary.json` (from `scripts/run_final_comparison.py`, Sen1Floods11 test, n=90).
 
 | Method | IoU | F1 | Precision | Recall | Accuracy | κ | Runtime ms/chip |
 |---|---|---|---|---|---|---|---|
-| Classical (`ndwi_yen_raw`) | 0.440 | 0.547 | — | — | — | 0.497 | *(fill from run)* |
-| U-Net (ResNet-34) | 0.548 | 0.660 | 0.672 | 0.734 | 0.971 | 0.652 | *(fill)* |
-| Hybrid (w_unet = 0.7) | *(fill)* | *(fill)* | *(fill)* | *(fill)* | *(fill)* | *(fill)* | *(fill)* |
+| Classical (`ndwi_yen_raw`) | 0.4401 | 0.5475 | 0.5902 | **0.7601** | 0.8869 | 0.4968 | 6.25 |
+| **U-Net (ResNet-34)** | **0.5475** | **0.6604** | **0.6719** | 0.7337 | **0.9709** | **0.6522** | 32.57 |
+| Hybrid (w_unet = 0.7) | 0.5313 | 0.6364 | 0.6401 | 0.7356 | 0.9698 | 0.6136 | 0.87¹ |
 
-Paired bootstrap CIs (n = 10 000 resamples):
+¹ Hybrid runtime figure is the **fusion step alone**; the full end-to-end pipeline requires classical + U-Net + fusion = ≈ 40 ms/chip.
+
+Paired bootstrap CIs on per-chip ΔIoU (10 000 resamples):
 
 | Comparison | ΔIoU mean | 95 % CI | Significance |
 |---|---|---|---|
-| U-Net − Classical | +0.076 | [+0.037, +0.114] | ✅ p < 0.05 |
-| Hybrid − Classical | *(fill)* | *(fill)* | *(fill)* |
-| U-Net − Hybrid | *(fill)* | *(fill)* | *(fill)* |
+| U-Net − Classical | **+0.0756** | [+0.0371, +0.1140] | ✅ significant |
+| Hybrid − Classical | **+0.0811** | [+0.0534, +0.1103] | ✅ significant |
+| U-Net − Hybrid | −0.0095 | [−0.0240, +0.0049] | ❌ **not** significant (CI spans 0) |
 
-Pixel-level McNemar:
+Pixel-level McNemar (continuity-corrected):
 
 | Comparison | χ² | p-value | |
 |---|---|---|---|
-| U-Net vs Classical | *(fill)* | *(fill)* | ✅ significant |
-| Hybrid vs Classical | *(fill)* | *(fill)* | *(fill)* |
+| U-Net vs Classical | 1 130 733 | ≈ 0 | ✅ highly significant |
+| Hybrid vs Classical | 1 320 805 | ≈ 0 | ✅ highly significant |
+
+## 2.1 Headline finding — hybrid fusion does NOT beat the U-Net alone
+
+A 70/30 weighted combination of U-Net probabilities and classical mask *underperforms* the U-Net in isolation (IoU 0.5313 vs 0.5475, ΔIoU −0.0095 with 95 % CI spanning zero). The classical mask's noise — it over-predicts water via high recall / low precision — is diluted rather than denoised by the fusion. **The U-Net is both the accuracy and the Occam's-razor winner.** The classical pipeline retains two legitimate roles: (i) a fast, explainable **fallback** for the Streamlit app when the GPU checkpoint is unavailable; (ii) a **baseline to beat** that anchors the rubric's Analysis & Results criterion.
 
 ## 3. Hybrid-fusion choice
 
@@ -108,4 +114,8 @@ Proceed → **Phase 6 · Streamlit web app**.
 
 ## 9. Narrative draft (for IEEE report §5 Discussion)
 
-> The head-to-head comparison on the Sen1Floods11 test split confirms that the U-Net substantially improves on the classical baseline (ΔIoU = +0.108 mean-level; +0.076 paired-bootstrap, 95 % CI excludes zero). The hybrid fusion at α = 0.7 extracts a further *(to fill)* IoU points by using the classical mask as a prior. Error-category analysis reveals that the majority of remaining false negatives fall under **turbid_water** pixels: the U-Net's feature bank, trained largely on clear-water Sen1Floods11 chips, under-generalises to sediment-laden flood water whose spectral signature approaches bare soil. Conversely, false positives cluster in **dark_land** regions, particularly shadows cast by tall buildings and by cloud edges. Two directions for future work follow naturally: (a) augmenting the training set with synthesised turbid-water chips by spectrally interpolating between water and bare-soil endmembers; (b) injecting an explicit shadow index (e.g. hue-saturation-value shadow ratio) as a 7th input channel. Both are cheap, model-agnostic, and directly motivated by the error table above.
+> The head-to-head comparison on the Sen1Floods11 test split confirms that the U-Net substantially improves on the classical baseline (mean IoU 0.548 vs 0.440, ΔIoU +0.076 paired-bootstrap with 95 % CI [+0.037, +0.114], pixel-level McNemar χ² = 1.13 × 10⁶, p ≈ 0). Cohen's κ rises from 0.497 (moderate agreement) to 0.652 (substantial agreement). The classical method retains the highest recall (0.760) because it over-commits to water — its high false-positive rate explains the lower precision (0.590 vs 0.672). Overall accuracy rises by 8.4 percentage points (0.887 → 0.971), which is a more interpretable headline for non-technical stakeholders.
+>
+> A naive hybrid fusion at α = 0.7 (70 % U-Net probability, 30 % classical mask, thresholded at 0.5) *fails* to extract additional accuracy — the hybrid IoU (0.531) is within a single per-chip bootstrap CI of the pure U-Net (0.548, ΔIoU = −0.010, CI [−0.024, +0.005] spans zero). Intuitively, the classical mask's noise dilutes rather than regularises the U-Net's calibrated probabilities. This is a negative but scientifically useful result: it argues **against** deploying the more complex hybrid pipeline and **for** the simpler U-Net-only path, reserving the classical pipeline for the Streamlit app's CPU-only fallback.
+>
+> Error-category analysis *(figures §6)* reveals that the majority of residual false negatives fall under **turbid_water** and **vegetation** categories: the U-Net under-detects sediment-laden flood water (spectrally close to bare soil) and tree-covered flooded terrain (vegetation canopy masks the water signal in optical bands). Conversely, false positives cluster in **dark_land** (shadows, asphalt, cloud edges), whose low NIR + near-zero MNDWI mimic water. Three directions for future work follow naturally: (a) retraining on Sen1Floods11's WeaklyLabeled split (4 385 additional chips) to broaden the model's diversity; (b) injecting **Sentinel-1 VV/VH backscatter** as auxiliary channels — SAR sees through vegetation and resolves the canopy-flood ambiguity; (c) explicit shadow suppression via a hue-saturation-value shadow index as a 7th input channel.
