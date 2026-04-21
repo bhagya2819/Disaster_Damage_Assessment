@@ -1,0 +1,17 @@
+# Streamlit app runtime config. Read by app/streamlit_app.py via env var fallbacks.
+
+# Path to the Sen1Floods11 HandLabeled root.
+sen1floods11_root: /content/drive/MyDrive/dda/sen1floods11
+
+# Path to the trained U-Net checkpoint (best.pt).
+checkpoint: /content/drive/MyDrive/dda/checkpoints/unet_resnet34/best.pt
+
+# Default method shown in the sidebar dropdown.
+default_method: unet
+
+# Hybrid fusion weight (0 = classical-only, 1 = U-Net-only).
+hybrid_weight_unet: 0.7
+
+# UI tuning
+default_chip_index: 0
+streamlit_port: 8501
