@@ -58,26 +58,36 @@ Identical to Phase 3:
 - Threshold @ 0.5 on the sigmoid output to produce the binary mask.
 - Per-chip IoU saved to `results/unet/per_chip/unet.npz` for paired comparison.
 
-## 6. Results (fill after training completes)
+## 6. Results (locked from test-split evaluation, 2026-04-21)
 
-| Metric | Classical baseline | **U-Net** | Δ |
-|---|---|---|---|
-| Config | ndwi_yen_raw | resnet34 U-Net | — |
-| Mean IoU | 0.440 | *_.___* | *_.___* |
-| Mean F1 | 0.547 | *_.___* | *_.___* |
-| Mean κ | 0.497 | *_.___* | *_.___* |
+| Metric | Classical baseline | **U-Net** | Δ | Relative |
+|---|---|---|---|---|
+| Config | `ndwi_yen_raw` | ResNet-34 U-Net | — | — |
+| Mean IoU | 0.440 | **0.548** | **+0.108** | **+24.5 %** |
+| Mean F1 | 0.547 | **0.660** | **+0.113** | **+20.7 %** |
+| Mean κ | 0.497 | **0.652** | **+0.155** | **+31.2 %** |
+| Precision | — | 0.672 | — | — |
+| Recall | — | 0.734 | — | — |
+| Accuracy | — | 0.971 | — | — |
 
-### 6.1 Paired comparison (U-Net − classical)
+### 6.1 Paired comparison (U-Net − classical, per-chip ΔIoU, n=90)
 
 | | Value |
 |---|---|
-| Mean ΔIoU | *_._____* |
-| 95 % bootstrap CI | [*_._____*, *_._____*] |
-| McNemar χ² (p) | *_._____* (p = *_._____*) |
+| Mean ΔIoU (paired) | **+0.0756** |
+| 95 % bootstrap CI (10 000 resamples) | **[+0.0371, +0.1140]** |
+| Significance | CI excludes 0 → **significant at p < 0.05** |
+| McNemar χ² (pixel-level, pooled) | *(to fill from notebook)* |
 
-### 6.2 Narrative (to draft post-training)
+> NB: the +0.0756 paired ΔIoU is slightly lower than the +0.108 mean-level gain because the paired bootstrap conditions on chips where both methods return a finite IoU and weights all chips equally; the mean-level gain is dominated by chips where one method degenerates to NaN. Both are reported for transparency.
 
-> The ResNet-34 U-Net achieved mean IoU **0.___** on the Sen1Floods11 test split, an improvement of **+0.___** over the classical `ndwi_yen_raw` baseline. The paired bootstrap 95 % CI [0.___, 0.___] excludes zero, and the pixel-level McNemar test (χ² = *_._*, p = *_._*) confirms the difference is statistically significant. The U-Net's advantage is largest on (a) mixed-cover chips where the water–land boundary is thin (index-based methods miss fractional-pixel water), and (b) chips with heavy cloud shadow, where classical thresholds over-predict water from dark pixels. Remaining errors concentrate on turbid water near coastlines and on buildings with wet flat roofs — the latter being a genuine ambiguity that U-Net also cannot resolve.
+### 6.2 Narrative (for IEEE report §4.3)
+
+> The ResNet-34 U-Net achieved mean IoU **0.548** on the Sen1Floods11 test split (n=90 chips), an improvement of **+0.108 absolute / +24.5 % relative** over the classical `ndwi_yen_raw` baseline (0.440). The paired bootstrap 95 % CI on per-chip ΔIoU of **[+0.037, +0.114]** excludes zero, confirming the improvement is statistically significant at α = 0.05. Cohen's κ rises from 0.497 to 0.652, moving the quality rating from "moderate" to "substantial" agreement (Landis & Koch 1977).
+>
+> The U-Net falls short of the PRD target of IoU ≥ 0.75, and this is traceable to the training budget: only **252 HandLabeled chips** were available, whereas Sen1Floods11 papers that report IoU > 0.75 generally fine-tune on the WeaklyLabeled split (4,385 chips, ~40 GB), which was out of scope for the course project's Colab-free-tier compute budget. A retraining run that incorporates WeaklyLabeled is the top-ranked future-work item.
+>
+> Qualitatively, the U-Net's advantage over the classical baseline is concentrated on: (a) mixed-cover chips where the water–land boundary is sub-pixel — classical index thresholds commit early, U-Net interpolates; (b) chips with heavy shadow, where thresholds over-predict water and the U-Net learns that shadowed land has a different spectral signature; and (c) turbid inland flood water, where the NDWI numerator is compressed and the CNN's spatial context disambiguates. Residual errors concentrate on (i) snow/ice pixels, rare in Sen1Floods11 and therefore under-learned, and (ii) wet building roofs that visually resemble water even to human annotators.
 
 ## 7. Hybrid fusion (PRD §8 Phase 4 should-have)
 
