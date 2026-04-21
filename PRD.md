@@ -18,9 +18,9 @@
 | Team Size | 3–4 members |
 | Timeline | 6–8 weeks |
 | Compute Budget | Google Colab (free tier T4 GPU) |
-| Document Version | v1.1 |
-| Last Updated | 2026-04-20 |
-| Change Log | v1.1 — locked §13 open questions: AOI = team's choice (Kerala 2018 confirmed); PyTorch allowed; presentation = 20 min; Sentinel-1 SAR earns bonus marks → promoted from stretch to should-have. |
+| Document Version | v1.2 |
+| Last Updated | 2026-04-21 |
+| Change Log | v1.1 — locked §13 open questions: AOI = team's choice (Kerala 2018 confirmed); PyTorch allowed; presentation = 20 min; Sentinel-1 SAR earns bonus marks → promoted from stretch to should-have. · v1.2 — UNOSAT / Copernicus-EMS ground-truth retrieval failed (dead URLs). Pivoted: **Sen1Floods11 is now the sole source of quantitative metrics**; Kerala 2018 becomes a qualitative case study + self-annotated spot checks. Removed "IoU on Kerala GT" as a hard success criterion. Hand-annotated patches (Phase 1 🟡) promoted to 🟢 must-have. |
 
 ---
 
@@ -68,7 +68,7 @@ Ground surveys are slow, expensive, and often infeasible during active flooding.
 ## 3. Goals & Non-Goals
 
 ### 3.1 Goals
-- G1. Produce a flood mask with **IoU ≥ 0.75** against Sen1Floods11 validation split.
+- G1. Produce a flood mask with **IoU ≥ 0.75** against Sen1Floods11 validation split. *(v1.2: this is now the **sole** quantitative accuracy gate; Kerala GT is not required.)*
 - G2. Deliver a **single-click web demo** where a user selects AOI + dates → gets maps + report.
 - G3. Demonstrate **side-by-side** performance of ≥ 3 classical DIP methods and ≥ 1 deep-learning method (ablation table).
 - G4. Auto-generate a **PDF damage report** with quantitative statistics and overlay maps.
@@ -147,7 +147,7 @@ Ground surveys are slow, expensive, and often infeasible during active flooding.
 - **Post-event Sentinel-2 tile:** 2018-08-19 to 2018-08-25.
 - **AOI bounding box (approx.):** 9.5°N, 76.0°E → 10.5°N, 77.0°E (Alappuzha, Ernakulam, Thrissur).
 - **Bands used:** B2, B3, B4, B8, B11, B12 (10–20 m).
-- **Ground reference:** UNOSAT flood extent shapefile + manual GT on 5 stratified patches.
+- **Ground reference (v1.2):** ~~UNOSAT flood extent shapefile~~ — external polygon mirrors unavailable at project time. **Manual GT on 5 stratified 512×512 patches is the sole Kerala reference** (annotated in QGIS, owned by B). Kerala evaluation is therefore **qualitative + spot-check** rather than pixel-wise.
 
 ### 7.2 Training/Validation Benchmark — Sen1Floods11
 - 4,831 labeled 512×512 chips across 11 global flood events.
@@ -197,8 +197,8 @@ Ground surveys are slow, expensive, and often infeasible during active flooding.
 - [ ] 🟢 Implement `src/data/gee_download.py` — GEE script to pull pre/post Sentinel-2 L2A scenes for a given AOI + date range; returns 6-band GeoTIFF. — Owner: B
 - [ ] 🟢 Run download for Kerala AOI (pre: Jul 2018, post: Aug 2018). Store in `data/raw/kerala_2018/`. — Owner: B
 - [ ] 🟢 Implement `src/data/sen1floods11_loader.py` — PyTorch `Dataset` class with band normalization and train/val/test splits. — Owner: C
-- [ ] 🟢 Fetch UNOSAT Kerala 2018 flood shapefile → rasterize to 10 m ground-truth mask (`data/gt/kerala_gt.tif`). — Owner: B
-- [ ] 🟡 Manually annotate 5 × 512×512 validation patches in QGIS (to supplement UNOSAT). — Owner: B
+- [ ] ~~🟢 Fetch UNOSAT Kerala 2018 flood shapefile → rasterize to 10 m ground-truth mask.~~ **Dropped in v1.2** — UNOSAT/Copernicus portal URLs dead; external GT unobtainable within the project window.
+- [ ] 🟢 **(promoted from 🟡 in v1.2)** Manually annotate 5 × 512×512 validation patches in QGIS. Save as `data/gt/kerala_patches/patch_{01..05}.geojson`. These become the Kerala spot-check set. — Owner: B
 - [ ] 🟢 Write `notebooks/01_data_eda.ipynb` — visualize pre/post RGB composites, band histograms, cloud-cover stats. — Owner: C
 - [ ] 🟢 Unit tests for data loaders (`tests/test_data.py`) — assert shapes, dtype, CRS, NoData handling. — Owner: A
 
