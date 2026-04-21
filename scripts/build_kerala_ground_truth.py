@@ -15,10 +15,16 @@ If no ``--output`` is given, writes to the path in the YAML config.
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
-from src.data.aoi import load_aoi
-from src.data.ground_truth import rasterize_flood_polygons
+# Make `src` importable when invoked as `python scripts/build_kerala_ground_truth.py`.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from src.data.aoi import load_aoi  # noqa: E402
+from src.data.ground_truth import rasterize_flood_polygons  # noqa: E402
 
 
 def main() -> None:

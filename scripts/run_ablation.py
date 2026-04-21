@@ -13,11 +13,19 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
-from src.data.sen1floods11_loader import Sen1Floods11Dataset
-from src.eval.ablation import run_ablation
-from src.utils.logging import get_logger
+# Ensure the repo root is importable when this file is invoked directly
+# via `python scripts/run_ablation.py` (Python puts scripts/ on the path,
+# not the repo root).
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from src.data.sen1floods11_loader import Sen1Floods11Dataset  # noqa: E402
+from src.eval.ablation import run_ablation  # noqa: E402
+from src.utils.logging import get_logger  # noqa: E402
 
 log = get_logger(__name__)
 
