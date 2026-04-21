@@ -55,11 +55,12 @@ def test_dice_loss_perfect_prediction() -> None:
 
 
 def test_dice_loss_all_wrong() -> None:
-    # With logits=-20 the sigmoid is ~2e-9 so the smoothed Dice loss should
-    # approach 1.0; using -5 only gets to ~0.88 because sigmoid(-5) ≈ 0.007.
-    target = torch.zeros(1, 4, 4, dtype=torch.int64)
-    target[..., :2] = 1
-    logits = torch.full((1, 4, 4), -20.0)
+    # The smoothed Dice loss has a ceiling of 1 - smooth/(K*smooth + smooth)
+    # = K/(K+1) for K foreground pixels (when probs → 0). So we need a
+    # reasonably large target before the test can pass a tight threshold.
+    target = torch.zeros(1, 64, 64, dtype=torch.int64)
+    target[..., :32] = 1  # K = 32*64 = 2048 foreground pixels
+    logits = torch.full((1, 64, 64), -20.0)
     loss = DiceLoss()(logits, target)
     assert loss.item() > 0.99
 
