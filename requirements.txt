@@ -61,3 +61,4 @@ tqdm>=4.66,<5.0
 typer>=0.9,<0.13
 rich>=13.7,<14.0
 pyyaml>=6.0,<7.0
+markdown-it-py>=3.0,<4.0
