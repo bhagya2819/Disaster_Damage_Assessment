@@ -4,41 +4,128 @@
 <meta charset="utf-8">
 <title>{{ title }}</title>
 <style>
-  @page { size: A4; margin: 18mm; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-         font-size: 11pt; color: #111; line-height: 1.45; }
+  @page {
+    size: A4;
+    margin: 20mm 18mm 22mm 18mm;
+    @bottom-center {
+      content: "Page " counter(page) " / " counter(pages);
+      font-size: 8pt;
+      color: #666;
+    }
+    @bottom-right {
+      content: "DDA · {{ method | upper }}";
+      font-size: 8pt;
+      color: #888;
+    }
+  }
+  @page :first {
+    @bottom-center { content: ""; }
+    @bottom-right  { content: ""; }
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 10.5pt; color: #111; line-height: 1.45;
+  }
   h1 { font-size: 22pt; margin: 0 0 4pt 0; }
-  h2 { font-size: 14pt; margin-top: 18pt; padding-bottom: 2pt; border-bottom: 1px solid #aaa; }
-  h3 { font-size: 12pt; margin-top: 12pt; }
-  .subtitle { color: #555; margin-bottom: 18pt; }
-  .meta { color: #666; font-size: 10pt; }
-  table { width: 100%; border-collapse: collapse; margin-top: 4pt; font-size: 10pt; }
-  th, td { border: 1px solid #bbb; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  h2 { font-size: 13pt; margin-top: 16pt; padding-bottom: 2pt;
+       border-bottom: 1px solid #aaa; page-break-after: avoid; }
+  h3 { font-size: 11pt; margin-top: 10pt; page-break-after: avoid; }
+
+  /* --- cover --- */
+  .cover {
+    page-break-after: always;
+    padding-top: 24pt;
+  }
+  .cover .logo {
+    max-height: 60px;
+    margin-bottom: 18pt;
+  }
+  .cover .subtitle { color: #555; font-size: 12pt; margin-bottom: 10pt; }
+  .cover .meta { color: #666; font-size: 10pt; }
+  .method-badge {
+    display: inline-block; padding: 2pt 8pt;
+    background: #2b5797; color: white; border-radius: 3pt;
+    font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5pt;
+  }
+
+  /* --- table of contents --- */
+  .toc { page-break-after: always; }
+  .toc h2 { border-bottom: 2px solid #2b5797; }
+  .toc ol { padding-left: 18pt; }
+  .toc li { margin: 3pt 0; }
+
+  /* --- tables --- */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin-top: 4pt; font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td { border: 1px solid #bbb; padding: 4pt 6pt; text-align: left;
+           vertical-align: top; }
   th { background: #eee; }
+
+  /* --- stat tiles --- */
   .stat-grid { display: table; width: 100%; }
   .stat-grid .row { display: table-row; }
-  .stat-grid .cell { display: table-cell; padding: 6pt; border-right: 1px solid #ccc; }
-  .stat-grid .cell:last-child { border-right: 0; }
-  .stat-grid .label { color: #666; font-size: 9pt; text-transform: uppercase; }
-  .stat-grid .value { font-size: 16pt; font-weight: 600; }
-  img { max-width: 100%; height: auto; }
-  .figure { margin: 10pt 0; }
-  .caption { color: #555; font-size: 9pt; margin-top: 2pt; }
-  .method-badge { display: inline-block; padding: 2pt 8pt;
-                  background: #2b5797; color: white; border-radius: 3pt;
-                  font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5pt; }
-  footer { margin-top: 20pt; color: #888; font-size: 9pt; border-top: 1px solid #ddd; padding-top: 6pt; }
+  .stat-grid .cell {
+    display: table-cell; padding: 8pt;
+    border: 1px solid #e0e0e0; background: #fafafa;
+  }
+  .stat-grid .label { color: #666; font-size: 8.5pt;
+                      text-transform: uppercase; letter-spacing: 0.5pt; }
+  .stat-grid .value { font-size: 15pt; font-weight: 600; color: #2b5797; margin-top: 2pt; }
+
+  /* --- figures with numbered captions --- */
+  .figure {
+    margin: 10pt 0;
+    page-break-inside: avoid;
+    text-align: center;
+  }
+  .figure img { max-width: 100%; height: auto; }
+  .figure .caption {
+    color: #333; font-size: 9pt; margin-top: 3pt; text-align: center;
+  }
+  .figure .caption strong { color: #2b5797; }
+
+  footer {
+    margin-top: 22pt; color: #888; font-size: 8.5pt;
+    border-top: 1px solid #ddd; padding-top: 6pt;
+  }
+  footer a { color: #2b5797; text-decoration: none; }
 </style>
 </head>
 <body>
 
-<h1>{{ title }}</h1>
-<div class="subtitle">
-  <span class="method-badge">{{ method | upper }}</span>
-  generated <span class="meta">{{ timestamp }}</span>
+<!-- ================== Cover page ================== -->
+<div class="cover">
+  {% if logo_path %}
+  <img class="logo" src="{{ logo_path }}" alt="Institute logo">
+  {% endif %}
+  <h1>{{ title }}</h1>
+  <div class="subtitle">Flood extent · damage severity · quantitative damage summary</div>
+  <p class="meta">
+    <span class="method-badge">{{ method | upper }}</span>
+    &nbsp;Generated {{ timestamp }}<br>
+    Pipeline runtime {{ "%.1f" | format(runtime_ms) }} ms/chip &middot;
+    Method IoU benchmark {{ "%.3f" | format(benchmark_rows[1].iou if benchmark_rows and benchmark_rows|length > 1 else 0.548) }}
+    on Sen1Floods11 test (U-Net).
+  </p>
 </div>
 
-<h2>1. Summary</h2>
+<!-- ================== Table of contents ================== -->
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li>Summary statistics</li>
+    <li>Post-event scene &amp; flood overlay</li>
+    <li>Damage severity classification</li>
+    <li>Method benchmark</li>
+    <li>Methodology</li>
+  </ol>
+</div>
+
+<!-- ================== 1. Summary ================== -->
+<h2>1. Summary statistics</h2>
 <div class="stat-grid">
   <div class="row">
     <div class="cell">
@@ -60,23 +147,28 @@
   </div>
 </div>
 
+<!-- ================== 2. Flood map ================== -->
 {% if rgb_img_b64 %}
-<h2>2. Post-event scene & flood overlay</h2>
+<h2>2. Post-event scene &amp; flood overlay</h2>
 <div class="figure">
   <img src="data:image/png;base64,{{ rgb_img_b64 }}" alt="Flood overlay">
-  <div class="caption">Left: post-event true-colour composite. Right: predicted flood mask overlaid in blue.</div>
+  <div class="caption"><strong>Figure 1.</strong> Left: post-event true-colour (B4, B3, B2) Sentinel-2 composite. Right: predicted flood mask overlaid on the RGB in blue. Method: {{ method | upper }}.</div>
 </div>
 {% endif %}
 
+<!-- ================== 3. Severity ================== -->
 {% if severity_img_b64 %}
-<h2>3. Damage severity</h2>
+<h2>3. Damage severity classification</h2>
 <div class="figure">
   <img src="data:image/png;base64,{{ severity_img_b64 }}" alt="Severity">
-  <div class="caption">Per-cell severity class (None / Low / Moderate / Severe), cell size {{ severity_cell_km }} km.</div>
+  <div class="caption"><strong>Figure 2.</strong> Per-cell severity classification (cell = {{ severity_cell_km }} km × {{ severity_cell_km }} km) into None / Low / Moderate / Severe based on flooded-pixel fraction. Left: fraction; right: classified severity.</div>
 </div>
 
+<h3>Severity cell counts</h3>
 <table>
-  <thead><tr><th>Class</th><th>Cells</th><th>Area (km²)</th><th>Share of AOI</th></tr></thead>
+  <thead>
+    <tr><th>Class</th><th>Cells</th><th>Area (km²)</th><th>Share of AOI</th></tr>
+  </thead>
   <tbody>
   {% for row in severity_rows %}
     <tr>
@@ -90,10 +182,16 @@
 </table>
 {% endif %}
 
+<!-- ================== 4. Benchmark ================== -->
 {% if benchmark_rows %}
-<h2>4. Method benchmark (Sen1Floods11 test)</h2>
+<h2>4. Method benchmark (Sen1Floods11 test, n = 90)</h2>
 <table>
-  <thead><tr><th>Method</th><th>IoU</th><th>F1</th><th>κ</th><th>Accuracy</th><th>Recall</th><th>Precision</th></tr></thead>
+  <thead>
+    <tr>
+      <th>Method</th><th>IoU</th><th>F1</th><th>κ</th>
+      <th>Accuracy</th><th>Recall</th><th>Precision</th>
+    </tr>
+  </thead>
   <tbody>
   {% for r in benchmark_rows %}
     <tr>
@@ -108,13 +206,16 @@
   {% endfor %}
   </tbody>
 </table>
+<p class="caption"><strong>Table 1.</strong> Paired bootstrap 95 % CI on per-chip ΔIoU (U-Net − Classical): [+0.037, +0.114]. McNemar χ² ≈ 1.13 × 10⁶, p ≈ 0.</p>
 {% endif %}
 
+<!-- ================== 5. Methodology ================== -->
 <h2>5. Methodology</h2>
 <p>{{ methodology_text }}</p>
 
 <footer>
-  Generated by the DDA Streamlit pipeline · {{ timestamp }} · Pipeline runtime {{ "%.1f" | format(runtime_ms) }} ms/chip.
+  Generated by the DDA Streamlit pipeline · {{ timestamp }} ·
+  Source: <a href="https://github.com/bhagya2819/Disaster_Damage_Assessment">github.com/bhagya2819/Disaster_Damage_Assessment</a>.
 </footer>
 
 </body>

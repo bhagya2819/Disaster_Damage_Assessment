@@ -66,6 +66,7 @@ class ReportContext:
     severity_cfg: SeverityConfig = field(default_factory=lambda: SeverityConfig(cell_px=16))
     benchmark_rows: list[dict[str, Any]] = field(default_factory=lambda: list(DEFAULT_BENCHMARK_ROWS))
     methodology_text: str = DEFAULT_METHODOLOGY
+    logo_path: str | None = None    # optional file:// or base64 path to an institute logo
 
 
 # ---------- rendering helpers ----------
@@ -164,6 +165,7 @@ def render_html(ctx: ReportContext) -> str:
         benchmark_rows=ctx.benchmark_rows,
         methodology_text=ctx.methodology_text,
         runtime_ms=ctx.result.runtime_ms,
+        logo_path=ctx.logo_path,
     )
 
 
