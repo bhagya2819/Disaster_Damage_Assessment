@@ -1,0 +1,22 @@
+# Streamlit runtime configuration for the DDA demo.
+
+[theme]
+primaryColor = "#2b5797"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f3f4f6"
+textColor = "#111111"
+font = "sans serif"
+
+[server]
+# Streamlit Community Cloud sets these automatically; the values below are
+# the canonical local-development defaults.
+headless = true
+runOnSave = false
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+showErrorDetails = true

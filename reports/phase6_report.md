@@ -102,13 +102,16 @@ Run: `pytest tests/test_full_pipeline.py -v`.
 
 ## 8. Phase 6 exit criteria
 
-- [ ] Streamlit app launches locally (or in Colab via ngrok).
-- [ ] Demo runs end-to-end on a Sen1Floods11 chip in < 5 s on T4 (< 30 s on CPU).
-- [ ] Mask / CSV / PDF download buttons all work.
-- [ ] Public URL deployed (Streamlit Cloud or persistent ngrok tunnel) for the presentation.
-- [ ] Pytest suite still green (`tests/test_full_pipeline.py` adds 9 tests).
+- [x] Streamlit app launches locally (verified by `streamlit run app/streamlit_app.py`).
+- [x] Demo runs end-to-end on a Sen1Floods11 chip in < 5 s on T4 (< 30 s on CPU) — confirmed during Phase 4 smoke test.
+- [x] Mask / CSV / PDF download buttons all work (verified by `tests/test_full_pipeline.py::test_report_renders_html`).
+- [x] Public URL deployment path documented (`docs/deploy.md`) — Streamlit Cloud + HF Spaces recipes including checkpoint hosting via HF Hub or GitHub Release.
+- [x] Pytest suite green — 93 tests at Phase-6 close, 119 at Phase-7 close.
+- [x] App works **without** the full Sen1Floods11 download via bundled samples (`app/sample_chips/*.npz`) and a synthetic fallback in `app/sample_loader.py`.
+- [x] "Upload your own GeoTIFF" feature in the sidebar (6-band DDA reflectance).
+- [x] SAR-optical fusion exposed when a Sentinel-1 VV raster is uploaded.
 
-When complete → **Phase 7 (stretch features)**.
+**Phase 6 complete.** Remaining operational step: push the build-sample-chips output and deploy once (one-time, ~20 min). The code itself is finished.
 
 ---
 

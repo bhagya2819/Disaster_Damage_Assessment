@@ -105,6 +105,10 @@ data/external/**
 # -------- Model artefacts (root-only; do not swallow src/models/) --------
 /models/
 /checkpoints/
+
+# -------- App bundled sample chips — commit the tiny .npz snapshots --------
+!app/sample_chips/**/*.npz
+!app/sample_chips/manifest.json
 *.pt
 *.pth
 *.ckpt

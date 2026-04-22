@@ -1,0 +1,9 @@
+# Apt packages installed by Streamlit Community Cloud before pip install.
+# WeasyPrint needs these system libs at runtime to render PDFs.
+
+libpango-1.0-0
+libpangoft2-1.0-0
+libharfbuzz0b
+libcairo2
+libgdk-pixbuf-2.0-0
+shared-mime-info
