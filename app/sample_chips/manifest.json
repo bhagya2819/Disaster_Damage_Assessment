@@ -1,0 +1,90 @@
+[
+  {
+    "path": "chip_00_Sri-Lanka_534068.npz",
+    "chip_id": "Sri-Lanka_534068",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.9813232421875,
+    "pixel_size_m": 40
+  },
+  {
+    "path": "chip_01_Pakistan_849790.npz",
+    "chip_id": "Pakistan_849790",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.6645730986878925,
+    "pixel_size_m": 40
+  },
+  {
+    "path": "chip_02_India_900498.npz",
+    "chip_id": "India_900498",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.47450381679389314,
+    "pixel_size_m": 40
+  },
+  {
+    "path": "chip_03_India_591317.npz",
+    "chip_id": "India_591317",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.46754260439703393,
+    "pixel_size_m": 40
+  },
+  {
+    "path": "chip_04_India_747992.npz",
+    "chip_id": "India_747992",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.4490966796875,
+    "pixel_size_m": 40
+  },
+  {
+    "path": "chip_05_Paraguay_790830.npz",
+    "chip_id": "Paraguay_790830",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.12120098039215686,
+    "pixel_size_m": 40
+  },
+  {
+    "path": "chip_06_USA_430764.npz",
+    "chip_id": "USA_430764",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.05872298864607496,
+    "pixel_size_m": 40
+  },
+  {
+    "path": "chip_07_Ghana_313799.npz",
+    "chip_id": "Ghana_313799",
+    "shape": [
+      6,
+      128,
+      128
+    ],
+    "flood_fraction": 0.06159278148293448,
+    "pixel_size_m": 40
+  }
+]

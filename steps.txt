@@ -1,0 +1,224 @@
+================================================================================
+          DDA PROJECT — VERIFICATION STEPS (Local Run on macOS)
+================================================================================
+
+PREREQUISITE (already done):
+  source .venv/bin/activate
+  streamlit run app/streamlit_app.py
+  → App should be at http://localhost:8501
+
+================================================================================
+STEP 1: VERIFY STREAMLIT APP (in your browser at localhost:8501)
+================================================================================
+
+1a. CHECK PAGE TITLE
+    → You should see: "🌊 Disaster Damage Assessment — flood mapping"
+    → Subtitle: "Sentinel-2 optical + Sentinel-1 SAR · Sen1Floods11 benchmark ·
+      classical DIP + U-Net + hybrid"
+
+1b. CHECK SIDEBAR
+    → Data source: "Bundled samples" (selected by default)
+    → Method: "classical" (only option without a U-Net checkpoint)
+    → Device: "cpu"
+    → Warning: "No bundled chips found. Using a synthetic fallback."
+    → "Run prediction" button at the bottom
+
+1c. CLICK "Run prediction"
+    → Wait 1-2 seconds
+    → You should now see 4 tabs: 🗺️ Map | 📊 Metrics | ⬇️ Downloads | ℹ️ About
+
+1d. CHECK 🗺️ MAP TAB
+    → 3 images side by side:
+      - Post-event RGB (noisy colored image — this is the synthetic chip)
+      - CLASSICAL flood mask (left half white = water, right half black = land)
+      - Ground truth (same pattern)
+    → Below: an overlay map showing RGB with blue flood mask
+
+1e. CHECK 📊 METRICS TAB
+    → Flooded area: ~0.386 km²
+    → Of AOI: ~23.5%
+    → Method runtime: ~5-10 ms
+    → IoU vs GT: ~0.471
+    → Benchmark table with 3 methods (Classical, U-Net, Hybrid)
+
+1f. CHECK ⬇️ DOWNLOADS TAB
+    → 3 download buttons: Mask (PNG), Mask (GeoTIFF), Stats (CSV)
+    → Try clicking each — they should download files
+    → "Generate PDF damage report" button (may fail without pango/cairo libs)
+
+1g. CHECK ℹ️ ABOUT TAB
+    → Method descriptions and repo link
+    → Key results section
+
+================================================================================
+STEP 2: RUN SMOKE TESTS (in terminal)
+================================================================================
+
+Open a NEW terminal tab/window, then:
+
+  cd /Users/bhagyasrisakala/Documents/DIP_Disaster_damage_assessment
+  source .venv/bin/activate
+  pytest tests/test_smoke.py -v
+
+EXPECTED OUTPUT:
+  tests/test_smoke.py ....      [100%]
+  4 passed
+
+================================================================================
+STEP 3: RUN FULL TEST SUITE (129 tests)
+================================================================================
+
+  pytest tests/ -v
+
+EXPECTED OUTPUT:
+  129 passed, ~74% code coverage
+  Takes about 40 seconds
+
+================================================================================
+STEP 4: VERIFY CORE MODULES IMPORT
+================================================================================
+
+  python -c "
+  from src.dip import indices, thresholding, morphology, change_detection
+  from src.dip import sar, filters
+  from src.models.unet import UNetConfig
+  from src.eval import metrics, ablation, significance, fusion
+  from src.pipelines.full_pipeline import run_pipeline
+  from src.analysis import severity, quantify, error_analysis
+  from src.preprocess import reflectance, cloud_mask, coregister
+  from src.data.sen1floods11_loader import Sen1Floods11Dataset
+  print('✅ All 20+ modules import successfully')
+  "
+
+================================================================================
+STEP 5: VERIFY CLASSICAL PIPELINE END-TO-END (headless)
+================================================================================
+
+  python -c "
+  import numpy as np
+  from src.pipelines.full_pipeline import run_pipeline
+
+  # Create a synthetic 6-band chip (water left, vegetation right)
+  chip = np.random.rand(6, 128, 128).astype(np.float32) * 0.1
+  chip[:, :, :64] = np.array([0.06, 0.08, 0.05, 0.02, 0.01, 0.01])[:, None, None]
+  chip[:, :, 64:] = np.array([0.05, 0.08, 0.04, 0.45, 0.25, 0.15])[:, None, None]
+
+  result = run_pipeline(chip, method='classical')
+  print(f'✅ Classical pipeline completed in {result.runtime_ms:.1f} ms')
+  print(f'   Flood mask shape: {result.mask.shape}')
+  print(f'   Flooded fraction: {result.stats[\"flooded_fraction\"]*100:.1f}%')
+  print(f'   Flooded area: {result.stats[\"flooded_km2\"]:.3f} km²')
+  "
+
+EXPECTED: Should complete in <100ms, flood fraction ~50%, area ~0.08 km²
+
+================================================================================
+STEP 6: VERIFY DIP TECHNIQUES (spectral indices + thresholding)
+================================================================================
+
+  python -c "
+  import numpy as np
+  from src.dip.indices import ndwi, mndwi, ndvi, awei_nsh, awei_sh
+  from src.dip.thresholding import threshold_otsu, threshold_yen
+
+  # Simulate a 6-band reflectance stack [B2, B3, B4, B8, B11, B12]
+  stack = np.random.rand(6, 64, 64).astype(np.float32) * 0.5
+
+  idx_ndwi = ndwi(stack)
+  idx_mndwi = mndwi(stack)
+  idx_ndvi = ndvi(stack)
+  idx_awei_nsh = awei_nsh(stack)
+  idx_awei_sh = awei_sh(stack)
+
+  print(f'✅ NDWI range:     [{idx_ndwi.min():.3f}, {idx_ndwi.max():.3f}]')
+  print(f'✅ MNDWI range:    [{idx_mndwi.min():.3f}, {idx_mndwi.max():.3f}]')
+  print(f'✅ NDVI range:     [{idx_ndvi.min():.3f}, {idx_ndvi.max():.3f}]')
+  print(f'✅ AWEInsh range:  [{idx_awei_nsh.min():.3f}, {idx_awei_nsh.max():.3f}]')
+  print(f'✅ AWEIsh range:   [{idx_awei_sh.min():.3f}, {idx_awei_sh.max():.3f}]')
+
+  res = threshold_otsu(idx_ndwi)
+  print(f'✅ Otsu threshold: {res.value:.3f}, water pixels: {res.mask.sum()}')
+  res2 = threshold_yen(idx_ndwi)
+  print(f'✅ Yen threshold:  {res2.value:.3f}, water pixels: {res2.mask.sum()}')
+  "
+
+================================================================================
+STEP 7: VERIFY U-NET MODEL ARCHITECTURE
+================================================================================
+
+  python -c "
+  import torch
+  from src.models.unet import build_unet, UNetConfig
+
+  cfg = UNetConfig()
+  model = build_unet(cfg)
+  dummy = torch.randn(1, 6, 128, 128)
+  out = model(dummy)
+  params = sum(p.numel() for p in model.parameters())
+  print(f'✅ U-Net created: {params/1e6:.2f}M parameters')
+  print(f'   Input:  {dummy.shape}')
+  print(f'   Output: {out.shape}')
+  print(f'   Output range: [{out.min():.3f}, {out.max():.3f}]')
+  "
+
+EXPECTED: ~24.45M parameters, output shape [1, 1, 128, 128]
+
+================================================================================
+STEP 8: VERIFY EVALUATION METRICS
+================================================================================
+
+  python -c "
+  import numpy as np
+  from src.eval.metrics import iou, dice_f1, cohens_kappa, overall_accuracy
+
+  pred = np.array([1,1,0,0,1,0,1,1,0,0])
+  gt   = np.array([1,1,1,0,0,0,1,1,0,1])
+
+  print(f'✅ IoU:      {iou(pred, gt):.3f}')
+  print(f'✅ Dice/F1:  {dice_f1(pred, gt):.3f}')
+  print(f'✅ Kappa:    {cohens_kappa(pred, gt):.3f}')
+  print(f'✅ Accuracy: {overall_accuracy(pred, gt):.3f}')
+  "
+
+================================================================================
+STEP 9: CHECK ALL REPORTS EXIST
+================================================================================
+
+  ls -la reports/*.md
+
+EXPECTED: 13 markdown files including:
+  - phase1_report.md through phase8_report.md
+  - lit_review.md, rubric_mapping.md, final_report.md
+  - presentation_outline.md, qna.md
+
+================================================================================
+STEP 10: CHECK ALL NOTEBOOKS EXIST
+================================================================================
+
+  ls -la notebooks/*.ipynb
+
+EXPECTED: 5 notebooks:
+  - 01_data_eda.ipynb
+  - 02_classical_dip_walkthrough.ipynb
+  - 03_ablation_analysis.ipynb
+  - 04_dl_training_and_eval.ipynb
+  - 05_analysis_and_severity.ipynb
+
+================================================================================
+                         SUMMARY CHECKLIST
+================================================================================
+
+  [ ] Step 1: Streamlit app loads and shows all 4 tabs
+  [ ] Step 2: 4 smoke tests pass
+  [ ] Step 3: 129 full tests pass with ~74% coverage
+  [ ] Step 4: All 20+ source modules import
+  [ ] Step 5: Classical pipeline runs end-to-end
+  [ ] Step 6: All 5 spectral indices + thresholding work
+  [ ] Step 7: U-Net model builds (24.45M params)
+  [ ] Step 8: Evaluation metrics compute correctly
+  [ ] Step 9: 13 report files present
+  [ ] Step 10: 5 notebooks present
+
+If ALL steps pass → ✅ PROJECT IS FULLY FUNCTIONAL
+
+================================================================================
